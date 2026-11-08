@@ -42,6 +42,22 @@ class PhishTankProvider:
                 first_seen=datetime.utcnow()
             )
 
+        # RFC 2606 & RFC 6761 special-use / synthetic test domain handling (.example, .test, .invalid, .localhost)
+        if any(sfx in target_url.lower() for sfx in [".example/", ".example:", ".example", ".test/", ".invalid/", ".localhost/"]):
+            return NormalizedThreatIndicator(
+                provider="PhishTank",
+                indicator_type="url",
+                indicator_value=target_url,
+                status="skipped_synthetic",
+                matched=False,
+                verified=False,
+                reference=None,
+                details={
+                    "query_status": "synthetic_domain_skipped",
+                    "reason": "RFC 2606 reserved testing domain (.example); real-world blacklist query skipped."
+                }
+            )
+
         if "example.com" in target_url or "example.org" in target_url or "example.net" in target_url:
             return NormalizedThreatIndicator(
                 provider="PhishTank",

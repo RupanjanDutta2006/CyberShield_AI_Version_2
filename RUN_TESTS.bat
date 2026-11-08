@@ -20,7 +20,7 @@ if exist "%PROJECT_ROOT%\backend\venv\Scripts\python.exe" (
     set "PYTHON_EXE=python"
 )
 
-echo [1/3] Running Backend Pytest Regression Suite (397 tests)...
+echo [1/3] Running Backend Pytest Regression Suite (415 tests)...
 echo -------------------------------------------------------------------------------
 cd /d "%PROJECT_ROOT%"
 "%PYTHON_EXE%" -m pytest backend\tests -v
@@ -45,7 +45,7 @@ echo ===========================================================================
 echo                            TEST RUN SUMMARY
 echo ===============================================================================
 if !PYTEST_EXIT! equ 0 (
-    echo   - Backend Pytest Suite   : PASS [397/397 tests passed]
+    echo   - Backend Pytest Suite   : PASS [415/415 tests passed]
 ) else (
     echo   - Backend Pytest Suite   : FAIL [Exit code !PYTEST_EXIT!]
 )

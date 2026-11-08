@@ -164,6 +164,11 @@ export const Scanner: React.FC = () => {
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 capitalize">
                     {result.scan_type} Target
                   </span>
+                  {(result.domain?.endsWith('.example') || result.hostname?.endsWith('.example') || result.domain?.endsWith('.test')) && (
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                      RFC 2606 Reserved Test Domain
+                    </span>
+                  )}
                   <span className="text-xs text-slate-400">
                     Scan ID: <span className="font-['JetBrains_Mono']">{result.scan_id.slice(0, 8)}...</span>
                   </span>
@@ -234,6 +239,10 @@ export const Scanner: React.FC = () => {
                         ) : prov.status === 'not_configured' ? (
                           <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-slate-400">
                             Key Not Configured
+                          </span>
+                        ) : prov.status === 'skipped_synthetic' ? (
+                          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                            Reserved / Test Domain
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">

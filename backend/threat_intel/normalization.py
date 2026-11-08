@@ -9,6 +9,12 @@ DANGEROUS_TLDS = {
     "gq", "cf", "ml", "work", "fit", "surf", "cfd", "sbs"
 }
 
+# RFC 2606 & RFC 6761 Special-Use and Reserved Domains for testing and documentation
+RESERVED_TLDS = {"example", "invalid", "localhost", "test"}
+RESERVED_DOMAINS = {"example.com", "example.net", "example.org"}
+SYNTHETIC_TEST_SUFFIXES = {".example", ".test", ".invalid", ".localhost", ".cyber"}
+
+
 
 class URLNormalizer:
     """
@@ -103,6 +109,13 @@ class URLNormalizer:
         if parsed.query:
             normalized_url += f"?{parsed.query}"
 
+        # Identify synthetic testing / documentation domain (RFC 2606)
+        is_synthetic = (
+            (tld.lower() in RESERVED_TLDS)
+            or (domain.lower() in RESERVED_DOMAINS)
+            or any(hostname.endswith(sfx) for sfx in SYNTHETIC_TEST_SUFFIXES)
+        )
+
         return {
             "original": sanitized,
             "normalized_url": normalized_url,
@@ -110,7 +123,10 @@ class URLNormalizer:
             "domain": domain,
             "tld": tld,
             "is_ip_literal": is_ip,
+            "is_synthetic": is_synthetic,
             "defanged_url": cls.defang_url(normalized_url),
             "scheme": parsed.scheme,
-            "port": parsed.port
+            "port": parsed.port,
+            "path": parsed.path or "/",
+            "query": parsed.query or ""
         }

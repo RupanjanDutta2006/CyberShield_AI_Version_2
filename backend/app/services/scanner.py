@@ -64,12 +64,16 @@ class ScannerService:
         db.commit()
 
         # 3. Member 1 SSRF Security Guard & Preflight Verification
-        preflight = investigate_url_preflight(raw_target)
+        preflight = investigate_url_preflight(normalized_url)
         is_blocked = (not preflight.is_eligible_for_scan) or (not preflight.validation.is_valid)
 
         if is_blocked:
             # Destination safety violation (SSRF, loopback, private IP, metadata address)
-            reason = preflight.ssrf_check.reason or "SSRF Security Guard: Target blocked by destination safety policy."
+            reason = (
+                getattr(preflight.ssrf_validation, "reason", None)
+                or getattr(preflight.validation, "error_message", None)
+                or "SSRF Security Guard: Target blocked by destination safety policy."
+            )
             db.add(ScanEvent(
                 scan_id=scan.id,
                 event_type="security_gate",
@@ -92,7 +96,7 @@ class ScannerService:
 
             # Assemble M1 Unified Threat Report
             m1_report = assemble_unified_threat_report(
-                target=raw_target,
+                target=normalized_url,
                 target_type=ScanType.URL,
                 preflight=preflight,
                 custom_limitations=["Outbound technical investigation omitted due to SSRF safety block or invalid syntax."]
@@ -158,7 +162,7 @@ class ScannerService:
         ))
         db.commit()
 
-        technical = investigate_technical_website(raw_target)
+        technical = investigate_technical_website(normalized_url)
 
         # 5. Query Threat Intelligence Feeds in parallel (URLhaus, PhishTank, M1 Threat Intel)
         urlhaus = URLhausProvider()
@@ -207,11 +211,11 @@ class ScannerService:
         assessment = ReputationAssessor.evaluate(meta, indicators)
 
         # Also pull Member 1 Threat Intel for unified aggregation
-        m1_ti = lookup_threat_intelligence(raw_target)
+        m1_ti = lookup_threat_intelligence(normalized_url)
 
         # 7. Assemble Unified Threat Report
         m1_report = assemble_unified_threat_report(
-            target=raw_target,
+            target=normalized_url,
             target_type=ScanType.URL,
             preflight=preflight,
             technical_investigation=technical,
@@ -226,6 +230,8 @@ class ScannerService:
         evidence_list = list(assessment.evidence)
         for finding in technical.all_findings:
             evidence_list.append(f"{finding.title}: {finding.description}")
+        for limitation in technical.all_limitations:
+            evidence_list.append(f"Forensic Observation ({limitation.module}): {limitation.reason}")
 
         # Derive final risk classification and score
         m1_score = m1_report.risk.score or 0
