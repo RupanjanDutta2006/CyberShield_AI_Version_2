@@ -1,0 +1,12 @@
+# CyberShield AI — Backend Dependencies
+# Verified against existing local Python 3.11 environment
+
+fastapi==0.143.0
+uvicorn==0.54.0
+pydantic==2.14.1
+httpx==0.28.1
+python-dotenv==1.2.4
+pytest==9.1.1
+SQLAlchemy==2.1.4
+web3==8.0.0
+
