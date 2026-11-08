@@ -197,3 +197,4 @@ class TestURLScannerAuditScenarios:
             pt = next((p for p in data.get("providers_checked", []) if p["provider"] == "PhishTank"), None)
             assert pt is not None
             assert pt["status"] == "not_configured"
+
